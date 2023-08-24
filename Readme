@@ -1,0 +1,49 @@
+Continuous Delivery for Docker Containers :-
+
+S-1 - Git Repository: Create a Git repository to host your Node.js project along with the Dockerfile. Ensure you commit your code and Dockerfile to the repository.
+S-2 - Log in to your Jenkins Server: Open a web browser and navigate to the URL of your Jenkins server. Log in using your credentials.
+S-3 - Enter the name and select pipeline project
+S-4 - Select git project add URL https://github.com/LondheShubham153/django-notes-app.git/ --> Advance --> Notes app
+S-4 - Select on GitHub hook trigger for GITScm polling
+S-5 - Install Docker on server 
+S-6 - Login username and password of DockerHub 
+S-7 - Set permission :- sudo chmod 755 var/run/docker.soc  
+S-8 - Go to credentials under- Stores scoped to Jenkins click on system --> Add domain -->Domain Name "dockerhub " --> Specification Docker server credentials
+S-9 - Add this pipeline script :- pipeline {
+    agent any
+    
+    stages {
+        stage("Clone code") {
+            steps {
+                echo "Cloning the code"
+                git url:"https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
+            }
+            
+        }
+        stage("build") {
+            steps {
+                echo "Building the image"
+                sh "docker build -t my-note-app ."
+            }
+        }
+        stage("Push to Docker Hub") {
+            steps {
+                echo "push to docker hub"
+                withCredentials([usernamePassword(credentialsId: "dockerHub", passwordVariable: "dockerHubPass", usernameVariable: "dockerHubUser")]) {
+                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                    sh "docker build -t ${env.dockerHubUser}/my-note-app:latest ."
+                    sh "docker push ${env.dockerHubUser}/my-note-app:latest"
+                }
+            }
+        }
+        stage("Deploy") {
+            steps {
+                echo "Deploying the container" 
+            }
+            
+        }
+    }
+}
+S-10 - Click save and build the project.
+
+
